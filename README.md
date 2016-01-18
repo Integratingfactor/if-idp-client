@@ -1,5 +1,5 @@
 # if-idp-client
-This is Java client library for accessing IDP services from [Integratingfactor.com](https://www.integratingfactor.com) platform.
+This is Java client library for accessing IDP services from [Integratingfactor.com](http://www.integratingfactor.com) platform.
 
 These libraries will provide functionality for following:
 * obtaining an openid connect id token for user authentication
