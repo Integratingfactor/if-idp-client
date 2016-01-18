@@ -3,6 +3,6 @@ This is Java client library for accessing IDP services from [Integratingfactor.c
 
 These libraries will provide functionality for following:
 * openid connect based user authentication
+* User approval for profile access and event subscription/notification
 * method level security based on user privilege
 * RBAC on resource paths based on oAuth2 access token
-* User authorization for event subscription and notificatoin
