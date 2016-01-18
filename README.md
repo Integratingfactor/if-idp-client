@@ -5,3 +5,4 @@ These libraries will provide functionality for following:
 * openid connect based user authentication
 * method level security based on user privilege
 * RBAC on resource paths based on oAuth2 access token
+* User authorization for event subscription and notificatoin
