@@ -1,4 +1,4 @@
-package com.integratingfactor.idp.lib.client.util;
+package com.integratingfactor.idp.lib.client.service;
 
 import java.util.Map;
 

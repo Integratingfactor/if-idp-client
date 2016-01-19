@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.integratingfactor.idp.lib.client.model.IdpTokenRequest;
+import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 
 /**
  * utility class to implement oAuth2 client communication with IDP service
@@ -70,7 +71,15 @@ public class IdpOauthClient {
     private static final String AccessToken = "access_token";
     private static final String Error = "error";
 
-    public OAuth2AccessToken getToken(Map<String, String> params) {
+    /**
+     * method to get access token based on authorization response from IDP
+     * 
+     * @param params
+     *            authorization response from IDP redirected via user's browser
+     * @return an access token (or null if failed)
+     */
+
+    public OAuth2AccessToken getAccessToken(Map<String, String> params) {
         OAuth2AccessToken token = null;
         if (params == null || params.isEmpty()) {
             LOG.warning("empty authorization response");
@@ -108,5 +117,90 @@ public class IdpOauthClient {
                     + params.get("error_description"));
         }
         return token;
+    }
+
+    /**
+     * this method is not a valid method for endpoint applications, because they
+     * will always require user's browser/user-agent to be redirected to the IDP
+     * service and complete the authentication and authorization.
+     *
+     * @return always returns null
+     */
+    public OAuth2AccessToken getAccessToken() {
+        return null;
+    }
+
+    /**
+     * this method will take a previously granted token and if there is a
+     * refresh token provided in the original token then it will use that to
+     * refresh the token grant
+     * 
+     * @param accessToken
+     *            original access token
+     * @return refreshed access token (or null if failed)
+     */
+    public OAuth2AccessToken getRefreshToken(OAuth2AccessToken accessToken) {
+        LOG.info("Authorization code grant");
+        if (accessToken == null) {
+            LOG.warning("Wrong operation refresh on null access token");
+            return null;
+        }
+
+        if (accessToken.getRefreshToken() == null) {
+            LOG.warning("Wrong operation refresh on null refresh token");
+            return null;
+        }
+        OAuth2AccessToken refreshedToken = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", authToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        IdpTokenRequest req = new IdpTokenRequest();
+        req.setGrantType("refresh_token");
+        req.setRefreshToken(accessToken.getRefreshToken().getValue());
+        req.setRedirectUri(redirectUri);
+        try {
+            refreshedToken = restTemplate.postForEntity(idpHost + "/oauth/token",
+                    new HttpEntity<MultiValueMap<String, String>>(req.toMap(), headers), OAuth2AccessToken.class)
+                    .getBody();
+
+        } catch (HttpClientErrorException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage() + " : " + e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage());
+        }
+        return refreshedToken;
+    }
+
+    /**
+     * this method will validate an access token with IDP service and get more
+     * details about the user, tenants and the scopes this token is valid for
+     * 
+     * @param token
+     *            access token to be validated
+     * @return validation details from IDP (or null if failed)
+     */
+    public IdpTokenValidation validateToken(OAuth2AccessToken token) {
+        LOG.info("validating access token");
+        if (token == null) {
+            LOG.warning("Cannot validate null access token");
+            return null;
+        }
+        IdpTokenValidation validation = null;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", authToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        IdpTokenRequest req = new IdpTokenRequest();
+        req.setToken(token.getValue());
+        try {
+            validation = restTemplate.postForEntity(idpHost + "/oauth/check_token",
+                    new HttpEntity<MultiValueMap<String, String>>(req.toMap(), headers), IdpTokenValidation.class)
+                    .getBody();
+
+        } catch (HttpClientErrorException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage() + " : " + e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage());
+        }
+        return validation;
     }
 }

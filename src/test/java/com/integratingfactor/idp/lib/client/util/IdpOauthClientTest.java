@@ -1,19 +1,23 @@
 package com.integratingfactor.idp.lib.client.util;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
+import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.util.OAuth2Utils;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.testng.asserts.Assertion;
 
+import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
+
 public class IdpOauthClientTest extends Assertion {
 
     IdpOauthClient client;
 
-    static final String testClientId = "test.oauth2.code.client.secret";
+    static final String testClientId = "test.oauth2.code.client";
 
-    String testClientSecret = "secret";
+    String testClientSecret = "";
 
     static final String idpHost = "https://if-idp.appspot.com";
 
@@ -67,14 +71,14 @@ public class IdpOauthClientTest extends Assertion {
     static final String userDeniedError = "error=access_denied&error_description=User denied access";
     @Test
     public void testThatReturnsNullTokenForError() {
-        OAuth2AccessToken token = client.getToken(OAuth2Utils.extractMap(userDeniedError));
+        OAuth2AccessToken token = client.getAccessToken(OAuth2Utils.extractMap(userDeniedError));
         assertNull(token);
     }
 
     static final String implicitTokenGrant = "access_token=8e45f953-6f7f-4774-a30e-57196d20251b&token_type=bearer&expires_in=59&scope=endpoint";
     @Test
     public void testThatReturnsTokenForImplicitGrant() {
-        OAuth2AccessToken token = client.getToken(OAuth2Utils.extractMap(implicitTokenGrant));
+        OAuth2AccessToken token = client.getAccessToken(OAuth2Utils.extractMap(implicitTokenGrant));
         assertNotNull(token);
         assertEquals(token.getTokenType(), "bearer");
         assertEquals(token.getValue(), "8e45f953-6f7f-4774-a30e-57196d20251b");
@@ -88,8 +92,52 @@ public class IdpOauthClientTest extends Assertion {
     // @Test
     public void testThatGetTokenFromIdpForAuthorizationCode() throws Exception {
         client = new IdpOauthClient(testClientId, testClientSecret, idpHost, testRedirectUri);
-        OAuth2AccessToken token = client.getToken(OAuth2Utils.extractMap(approvalResponse));
+        OAuth2AccessToken token = client.getAccessToken(OAuth2Utils.extractMap(approvalResponse));
         assertNotNull(token);
         System.out.println("Token: " + new ObjectMapper().writeValueAsString(token));
+    }
+
+    @Test
+    public void testThatChecksForNullAccessTokenUponRefresh() {
+        OAuth2AccessToken token = client.getRefreshToken(null);
+        assertNull(token);
+    }
+
+    @Test
+    public void testThatChecksForNullRefreshTokenUponRefresh() {
+        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
+        token.setRefreshToken(null);
+        OAuth2AccessToken refresh = client.getRefreshToken(token);
+        assertNull(refresh);
+    }
+
+    @Test
+    public void testThatGetsRefreshTokenFromIdp() throws Exception {
+        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("89ce0b64-6366-4358-a9c4-41c49c709062"));
+        OAuth2AccessToken refresh = client.getRefreshToken(token);
+        assertNotNull(refresh);
+        System.out.println("Token: " + new ObjectMapper().writeValueAsString(refresh));
+        assertNotNull(refresh.getRefreshToken());
+        assertTrue(refresh.getExpiresIn() > 0);
+    }
+
+    @Test
+    public void testThatChecksForNullAccessTokenUponValidation() {
+        IdpTokenValidation validation = client.validateToken(null);
+        assertNull(validation);
+    }
+
+    @Test
+    public void testThatValidatesTokenWithIdp() throws Exception {
+        DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("89ce0b64-6366-4358-a9c4-41c49c709062"));
+        OAuth2AccessToken refresh = client.getRefreshToken(token);
+        assertNotNull(refresh);
+        IdpTokenValidation validation = client.validateToken(refresh);
+        assertNotNull(validation);
+        System.out.println("Token validation: " + new ObjectMapper().writeValueAsString(validation));
+        assertNotNull(validation.getUserId());
+        assertFalse(validation.getAuthorities().isEmpty());
     }
 }
