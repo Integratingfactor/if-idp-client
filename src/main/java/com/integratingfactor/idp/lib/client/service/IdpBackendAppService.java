@@ -2,7 +2,7 @@ package com.integratingfactor.idp.lib.client.service;
 
 import java.util.Map;
 
-import com.integratingfactor.idp.lib.client.model.UserDetails;
+import com.integratingfactor.idp.lib.client.model.UserProfile;
 
 /**
  * this interface defines an IDP backend application library that will interact
@@ -29,5 +29,5 @@ public interface IdpBackendAppService {
      * @param params
      *            IDP service response parameters from authorization request
      */
-    UserDetails getUser(Map<String, String> params);
+    UserProfile getUser(Map<String, String> params);
 }

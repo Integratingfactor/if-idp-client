@@ -110,7 +110,13 @@ public class IdpOauthClient {
         } else if (params.containsKey(AccessToken)) {
             // this is implicit grant for access token
             LOG.info("implicit token grant");
-            token = DefaultOAuth2AccessToken.valueOf(params);
+            // token = DefaultOAuth2AccessToken.valueOf(params);
+            // copy all additional parameters from implicit token
+            DefaultOAuth2AccessToken newToken = new DefaultOAuth2AccessToken(DefaultOAuth2AccessToken.valueOf(params));
+            for (Map.Entry<String, String> kv : params.entrySet()) {
+                newToken.getAdditionalInformation().put(kv.getKey(), kv.getValue());
+            }
+            token = newToken;
         } else if (params.containsKey(Error)) {
             // this is error response
             LOG.info("OAuth2 Authorization error: " + params.get(Error) + "\nReason: "

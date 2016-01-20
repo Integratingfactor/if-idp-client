@@ -1,14 +1,17 @@
 package com.integratingfactor.idp.lib.client.service;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.security.jwt.JwtHelper;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -16,7 +19,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.integratingfactor.idp.lib.client.model.UserDetails;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.integratingfactor.idp.lib.client.model.IdToken;
+import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
+import com.integratingfactor.idp.lib.client.model.UserProfile;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 
 @Controller
@@ -31,6 +37,7 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
     String encryptionKey;
     static final String IdpHostKey = "idp.client.idp.host";
     static final String RedirectUrlKey = "idp.client.redirect.url";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private Environment env;
@@ -38,7 +45,7 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
     @PostConstruct
     public void setup() {
         oauthClient = new IdpOauthClient(env.getProperty(ClientIdKey), env.getProperty(ClientSecretKey),
-                env.getProperty(IdpHostKey), "" + env.getProperty(RedirectUrlKey) + pathSuffix);
+                env.getProperty(IdpHostKey), "" + env.getProperty(RedirectUrlKey) + pathSuffixLogin);
         this.encryptionKey = env.getProperty(EncryptionKeyKey);
         LOG.info("OpenId Connect Client initialized");
     }
@@ -51,30 +58,33 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
 
     // this is the suffix where we are listening for IDP redirects for
     // authorization requests
-    public static final String pathSuffix = "/openid";
+    public static final String pathSuffixLogin = "/openid/login";
+    public static final String pathSuffixLogout = "/openid/logout";
 
-    public static final String requestOriginator = "IDP_OPENID_CONNECT_REQUEST_ORIGINATOR";
+    public static final String IdpRequestOriginatorKey = "IDP_OPENID_CONNECT_REQUEST_ORIGINATOR";
+    public static final String IdpUserProfileKey = "IDP_OPENID_CONNECT_USER_PROFILE";
 
-    @RequestMapping(value = pathSuffix, method = RequestMethod.GET)
+    @RequestMapping(value = pathSuffixLogin, method = RequestMethod.GET)
     public String openIdConnectListener(HttpServletRequest request) {
 
         // return back to originating page for this authentication
-        String originator = (String) request.getSession().getAttribute(requestOriginator);
+        String originator = (String) request.getSession().getAttribute(IdpRequestOriginatorKey);
         if (StringUtils.isEmpty(originator)) {
             LOG.warning("Session does not have originator cache for this authentication");
             // use root landing page as default
             originator = "redirect:/";
+        } else {
+            originator = "redirect:" + originator;
         }
-        // clear the session before returning
-        request.getSession().setAttribute(requestOriginator, null);
+        // clear the session before proceeding
+        clearSession(request);
 
         // process request parameters for token handling
         Map<String, String> params = new HashMap<String, String>();
         for (Map.Entry<String, String[]> kv : request.getParameterMap().entrySet()) {
-            LOG.info("Adding key: " + kv.getKey() + ", value: " + kv.getValue()[0]);
             params.put(kv.getKey(), kv.getValue()[0]);
         }
-        UserDetails user = getUser(params);
+        UserProfile user = getUser(params);
         if (user == null) {
             // could not get user details, present an error on the originator
             // page
@@ -82,25 +92,46 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
             return originator;
         }
 
-        // setup authentication in spring security context
-        // TBD
-        
+        // put the user profile in session context for who so ever needs this
+        // (e.g. security filters)
+        request.getSession(true).setAttribute(IdpUserProfileKey, user);
+        LOG.info("Redirecting after openid connect authentication to " + originator);
         return originator;
     }
 
     public static final String originatingParam = "openidConnectRequestOriginator";
 
-    @RequestMapping(value = pathSuffix, method = RequestMethod.POST, params = { originatingParam })
+    @RequestMapping(value = pathSuffixLogin, method = RequestMethod.POST, params = { originatingParam })
     public String authenticateUser(@RequestParam(originatingParam) String originator, HttpServletRequest request) {
         // save the request originator to return back after authentication
-        request.getSession(true).setAttribute(requestOriginator, originator);
+        request.getSession(true).setAttribute(IdpRequestOriginatorKey, originator);
+        // TODO: need to add _csrf protection token here as part of
+        // authorization url param
         // redirect user to authorization request
         return "redirect:" + getAuthorizationUri();
     }
 
+    @RequestMapping(value = pathSuffixLogout, method = RequestMethod.POST)
+    public String logoutUser(HttpServletRequest request) {
+        // clear the session
+        clearSession(request);
+        // redirect user to main landing page
+        return "redirect:/";
+    }
+
+    private void clearSession(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+        if (session != null) {
+            session.setAttribute(IdpRequestOriginatorKey, null);
+            session.setAttribute(IdpUserProfileKey, null);
+            // TODO: need to clear _csrf protection token here as part of
+            // authorization url param
+        }
+    }
+
     public IdpOpenIdConnectClient(String clientId, String clientSecret, String encryptionKey, String idpHost,
             String redirectUri) {
-        oauthClient = new IdpOauthClient(clientId, clientSecret, idpHost, redirectUri + pathSuffix);
+        oauthClient = new IdpOauthClient(clientId, clientSecret, idpHost, redirectUri + pathSuffixLogin);
         this.encryptionKey = encryptionKey;
         LOG.info("OpenId Connect Client initialized");
     }
@@ -111,20 +142,42 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
     }
 
     @Override
-    public UserDetails getUser(Map<String, String> params) {
+    public UserProfile getUser(Map<String, String> params) {
         LOG.info("Getting user details from authorization response");
+        // TODO: need to check _csrf protection token from params here for
+        // validation
         OAuth2AccessToken token = oauthClient.getAccessToken(params);
         if (token == null) {
             LOG.warning ("Could not obtain access token from user approval");
             return null;
         }
-        UserDetails user = null;
+        UserProfile user = null;
         if (token.getAdditionalInformation().containsKey("id_token")) {
             // use the id_token, if present, to get user details
-
+            LOG.info("Openid connect ID token has user details");
+            String claims = JwtHelper.decode((String) token.getAdditionalInformation().get("id_token")).getClaims();
+            LOG.info("claims: " + claims);
+            try {
+                IdToken idToken = objectMapper.readValue(claims, IdToken.class);
+                user = new UserProfile();
+                user.setUserId(idToken.getSub());
+                // TODO: change this to use valid fields once IDP implements it
+                user.setFirstName(user.getUserId());
+                user.setSubject(user.getUserId());
+            } catch (IOException e) {
+                LOG.warning("Could not get Openid connect ID Token object from response");
+            }
         } else {
             // run a token validation, to get user details in validation
             // response
+            LOG.info("Token is not of type Openid connect, running validation to get user details");
+            IdpTokenValidation validation = oauthClient.validateToken(token);
+            if (validation != null) {
+                user = new UserProfile();
+                user.setUserId(validation.getUserId());
+            } else {
+                LOG.warning("Failed to validate access token");
+            }
         }
 
         return user;
