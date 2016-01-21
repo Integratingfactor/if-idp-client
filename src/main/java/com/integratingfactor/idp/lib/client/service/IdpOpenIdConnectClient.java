@@ -161,9 +161,9 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
                 IdToken idToken = objectMapper.readValue(claims, IdToken.class);
                 user = new UserProfile();
                 user.setUserId(idToken.getSub());
-                // TODO: change this to use valid fields once IDP implements it
-                user.setFirstName(user.getUserId());
-                user.setSubject(user.getUserId());
+                user.setFirstName((String) token.getAdditionalInformation().get("first_name"));
+                user.setLastName((String) token.getAdditionalInformation().get("last_name"));
+                user.setSubject(user.getFirstName() + " " + user.getLastName());
             } catch (IOException e) {
                 LOG.warning("Could not get Openid connect ID Token object from response");
             }
