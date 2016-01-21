@@ -18,10 +18,10 @@ import com.integratingfactor.idp.lib.client.model.UserProfile;
 
 @ContextConfiguration(classes = { IdpClientConfig.class })
 @WebAppConfiguration
-public class IdpOpenIdConnectClientTest extends AbstractTestNGSpringContextTests {
+public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
-    IdpOpenIdConnectClient client;
+    IdpOpenIdConnectMvcHandler client;
 
     private MockMvc mockMvc;
 
@@ -47,7 +47,7 @@ public class IdpOpenIdConnectClientTest extends AbstractTestNGSpringContextTests
         // send an authentication request with originating param
         MvcResult response = this.mockMvc
                 .perform(MockMvcRequestBuilders.post(IdpOpenIdConnectClient.pathSuffixLogin)
-                        .param(IdpOpenIdConnectClient.originatingParam, "index"))
+                        .param(IdpOpenIdConnectMvcHandler.originatingParam, "index"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 // .andExpect(MockMvcResultMatchers.redirectedUrl("/oauth/confirm_access"))
                 .andReturn();
