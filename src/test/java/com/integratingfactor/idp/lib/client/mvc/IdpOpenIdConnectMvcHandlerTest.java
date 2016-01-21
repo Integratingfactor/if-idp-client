@@ -1,4 +1,4 @@
-package com.integratingfactor.idp.lib.client.service;
+package com.integratingfactor.idp.lib.client.mvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -15,6 +15,8 @@ import org.testng.annotations.Test;
 
 import com.integratingfactor.idp.lib.client.config.IdpClientConfig;
 import com.integratingfactor.idp.lib.client.model.UserProfile;
+import com.integratingfactor.idp.lib.client.mvc.IdpOpenIdConnectMvcHandler;
+import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
 
 @ContextConfiguration(classes = { IdpClientConfig.class })
 @WebAppConfiguration

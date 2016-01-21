@@ -1,4 +1,4 @@
-package com.integratingfactor.idp.lib.client.service;
+package com.integratingfactor.idp.lib.client.mvc;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.integratingfactor.idp.lib.client.model.UserProfile;
+import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
 
 @Controller
 public class IdpOpenIdConnectMvcHandler {
