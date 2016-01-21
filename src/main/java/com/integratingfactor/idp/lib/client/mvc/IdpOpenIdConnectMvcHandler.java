@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.integratingfactor.idp.lib.client.model.UserProfile;
+import com.integratingfactor.idp.lib.client.model.IdpOpenIdConnectUser;
+import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
 
 @Controller
@@ -43,7 +44,7 @@ public class IdpOpenIdConnectMvcHandler {
         for (Map.Entry<String, String[]> kv : request.getParameterMap().entrySet()) {
             params.put(kv.getKey(), kv.getValue()[0]);
         }
-        UserProfile user = openidConnectClient.getUser(params);
+        IdpTokenValidation user = openidConnectClient.getValidatedUser(params);
         if (user == null) {
             // could not get user details, present an error on the originator
             // page

@@ -16,10 +16,10 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.client.model.IdToken;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
-import com.integratingfactor.idp.lib.client.model.UserProfile;
+import com.integratingfactor.idp.lib.client.model.IdpOpenIdConnectUser;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 
-public class IdpOpenIdConnectClient implements IdpBackendAppService {
+public class IdpOpenIdConnectClient {
     private static Logger LOG = Logger.getLogger(IdpOpenIdConnectClient.class.getName());
 
     private IdpOauthClient oauthClient;
@@ -74,13 +74,26 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
         LOG.info("OpenId Connect Client initialized");
     }
 
-    @Override
     public String getAuthorizationUri() {
         return oauthClient.getAuthorizationUri();
     }
 
-    @Override
-    public UserProfile getUser(Map<String, String> params) {
+    public IdpTokenValidation getValidatedUser(Map<String, String> params) {
+        LOG.info("Getting user details from authorization response");
+        // TODO: need to check _csrf protection token from params here for
+        // validation
+        OAuth2AccessToken token = oauthClient.getAccessToken(params);
+        if (token == null) {
+            LOG.warning("Could not obtain access token from user approval");
+            return null;
+        }
+        // run a token validation, to get user details in validation
+        // response
+        LOG.info("Running validation to get user details");
+        return oauthClient.validateToken(token);
+    }
+
+    public IdpOpenIdConnectUser getUser(Map<String, String> params) {
         LOG.info("Getting user details from authorization response");
         // TODO: need to check _csrf protection token from params here for
         // validation
@@ -89,32 +102,31 @@ public class IdpOpenIdConnectClient implements IdpBackendAppService {
             LOG.warning ("Could not obtain access token from user approval");
             return null;
         }
-        UserProfile user = null;
-        if (token.getAdditionalInformation().containsKey("id_token")) {
+        // run a token validation, to get user details in validation
+        // response
+        LOG.info("Running validation to get user details");
+        IdpTokenValidation validation = oauthClient.validateToken(token);
+        if (validation == null) {
+            LOG.warning("Failed to validate access token");
+            return null;
+        }
+        IdpOpenIdConnectUser user = null;
+        user = new IdpOpenIdConnectUser();
+        user.setUserId(validation.getUserId());
+        user.setAuthenticated(true);
+        user.setFirstName(validation.getFirstName());
+        user.setLastName(validation.getLastName());
+        user.setSubject(user.getFirstName() + " " + user.getLastName());
+        if (validation.getIdToken() != null) {
             // use the id_token, if present, to get user details
             LOG.info("Openid connect ID token has user details");
-            String claims = JwtHelper.decode((String) token.getAdditionalInformation().get("id_token")).getClaims();
+            String claims = JwtHelper.decode(validation.getIdToken()).getClaims();
             LOG.info("claims: " + claims);
             try {
                 IdToken idToken = objectMapper.readValue(claims, IdToken.class);
-                user = new UserProfile();
                 user.setUserId(idToken.getSub());
-                user.setFirstName((String) token.getAdditionalInformation().get("first_name"));
-                user.setLastName((String) token.getAdditionalInformation().get("last_name"));
-                user.setSubject(user.getFirstName() + " " + user.getLastName());
             } catch (IOException e) {
                 LOG.warning("Could not get Openid connect ID Token object from response");
-            }
-        } else {
-            // run a token validation, to get user details in validation
-            // response
-            LOG.info("Token is not of type Openid connect, running validation to get user details");
-            IdpTokenValidation validation = oauthClient.validateToken(token);
-            if (validation != null) {
-                user = new UserProfile();
-                user.setUserId(validation.getUserId());
-            } else {
-                LOG.warning("Failed to validate access token");
             }
         }
 
