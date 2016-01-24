@@ -26,7 +26,7 @@ Above steps should install the library into your local maven repository, and you
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
 * Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
-  * Security filter configuration in `web.xml` as described in Spring Security Framework Reference [Section 4.2.1 web.xml Configuration](http://docs.spring.io/spring-security/site/docs/4.0.3.RELEASE/reference/htmlsingle/#ns-web-xml), e.g.:
+  * add Spring security filter configuration in `web.xml`:
   ```XML
   <filter>
       <filter-name>springSecurityFilterChain</filter-name>
@@ -37,18 +37,18 @@ Above steps should install the library into your local maven repository, and you
       <url-pattern>/*</url-pattern>
   </filter-mapping>
   ```  
-  * Configuration bean declaration in application's context file:  
+  * add IDP client configuration bean declaration in application's context file:  
   ```XML
   <!-- Configure IDP client library -->  
   <bean id="idpClientSecurityConfig"
   class="com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig" />  
   ```  
   **Note: IDP Client configuration leaves following url paths available for unrestricted/public access: "/", "/resources/\*\*", "/about/\*\*"**
-  * provide following configurations in resource file `idp_client.properties` in your class path:  
+  * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:  
   ```
   idp.client.id=test.openid.code.client
   idp.client.secret=
   idp.client.encryption.key=
   idp.client.idp.host=https://if-idp.appspot.com
-  idp.client.redirect.url=https://integrating-factor.appspot.com
+  idp.client.redirect.url=http://localhost:8080
   ```
