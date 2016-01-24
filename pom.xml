@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-client</artifactId>
-  <version>0.0.5-SNAPSHOT</version>
+  <version>0.0.6-SNAPSHOT</version>
   <name>Integratingfactor.com IDP Client Library</name>
   <description>Integratingfactor.com IDP Client Library</description>
   <properties>
@@ -61,6 +61,11 @@
     <artifactId>jstl</artifactId>
     <version>1.2</version>
    </dependency>
+      <dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+	  </dependency>
  
    <!-- Test Dependencies -->
    <!-- Test -->

@@ -70,7 +70,8 @@ public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextT
  "a mock invalid code")
                         .sessionAttr(IdpOpenIdConnectClient.IdpRequestOriginatorKey, "/target"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.view().name("redirect:/target"))
+.andExpect(MockMvcResultMatchers.view()
+.name("redirect:" + IdpOpenIdConnectClient.pathSuffixLogin))
                 .andReturn();
 
         System.out.println(("Response Status: " + response.getResponse().getStatus()));

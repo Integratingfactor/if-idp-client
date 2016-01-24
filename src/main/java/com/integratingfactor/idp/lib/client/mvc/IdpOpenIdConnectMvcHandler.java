@@ -27,36 +27,34 @@ public class IdpOpenIdConnectMvcHandler {
     @RequestMapping(value = IdpOpenIdConnectClient.pathSuffixLogin, method = RequestMethod.GET)
     public String openIdConnectListener(HttpServletRequest request) {
 
-        // return back to originating page for this authentication
-        String originator = (String) request.getSession().getAttribute(IdpOpenIdConnectClient.IdpRequestOriginatorKey);
-        if (StringUtils.isEmpty(originator)) {
-            LOG.warning("Session does not have originator cache for this authentication");
-            // use root landing page as default
-            originator = "redirect:/";
-        } else {
-            originator = "redirect:" + originator;
-        }
-        // clear the session before proceeding
-        openidConnectClient.clearSession(request);
-
+        /*
+         * // return back to originating page for this authentication String
+         * originator = (String)
+         * request.getSession().getAttribute(IdpOpenIdConnectClient.
+         * IdpRequestOriginatorKey); if (StringUtils.isEmpty(originator)) {
+         * LOG.warning(
+         * "Session does not have originator cache for this authentication"); //
+         * use root landing page as default originator = "redirect:/"; } else {
+         * originator = "redirect:" + originator; } // clear the session before
+         * proceeding openidConnectClient.clearSession(request);
+         */
         // process request parameters for token handling
         Map<String, String> params = new HashMap<String, String>();
         for (Map.Entry<String, String[]> kv : request.getParameterMap().entrySet()) {
             params.put(kv.getKey(), kv.getValue()[0]);
         }
         IdpTokenValidation user = openidConnectClient.getValidatedUser(params);
-        if (user == null) {
-            // could not get user details, present an error on the originator
-            // page
-            request.setAttribute("error_message", "Could not obtain user details");
-            return originator;
+        if (user != null) {
+            // put the user profile in session context for who so ever needs
+            // this
+            // (e.g. security filters)
+            request.getSession(true).setAttribute(IdpOpenIdConnectClient.IdpUserProfileKey, user);
         }
-
-        // put the user profile in session context for who so ever needs this
-        // (e.g. security filters)
-        request.getSession(true).setAttribute(IdpOpenIdConnectClient.IdpUserProfileKey, user);
-        LOG.info("Redirecting after openid connect authentication to " + originator);
-        return originator;
+        // String redirect = "redirect:" +
+        // IdpOpenIdConnectClient.pathSuffixLogin + ".do";
+        String redirect = "redirect:" + IdpOpenIdConnectClient.pathSuffixLogin;
+        LOG.info("Redirecting after openid connect authentication to " + redirect);
+        return redirect;
     }
 
     public static final String originatingParam = "openidConnectRequestOriginator";
