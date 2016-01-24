@@ -7,13 +7,15 @@ These libraries will provide functionality for following:
 * Spring security framework support for authentication with Integratingfactor.com's IDP service
 * RBAC on resource paths based on oAuth2 access token
 
+# Usage
+
 ## How to build this project
 * Clone or download project
 * Build and install project library: `mvn install`
 
 Above steps should install the library into your local maven repository, and you should be able to use it in your application as described below.
 
-## How to use Integratingfactor.com's IDP client library?
+## How to configure Integratingfactor.com's IDP client library
 * download and build project as described above
 * Add following dependencies into your maven project:
 ```XML
@@ -44,7 +46,7 @@ Above steps should install the library into your local maven repository, and you
   class="com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig" />  
   ```  
   **Note: IDP Client configuration leaves following url paths available for unrestricted/public access: "/", "/resources/\*\*", "/about/\*\*"**
-  * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:  
+  * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:
   ```
   idp.client.id=test.openid.code.client
   idp.client.secret=
@@ -52,3 +54,15 @@ Above steps should install the library into your local maven repository, and you
   idp.client.idp.host=https://if-idp.appspot.com
   idp.client.redirect.url=http://localhost:8080
   ```
+
+## How to access authenticated user information
+Once user is authenticated, their profile can be access using following example:  
+```JAVA
+    IdpTokenValidation auth;
+    try {
+        auth = (IdpTokenValidation) SecurityContextHolder.getContext().getAuthentication();
+        request.setAttribute("user", auth);
+    } catch (ClassCastException e) {
+        LOG.info("User is unauthenticated");
+    }
+```
