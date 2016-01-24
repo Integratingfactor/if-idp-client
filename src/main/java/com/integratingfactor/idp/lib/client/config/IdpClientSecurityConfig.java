@@ -64,7 +64,8 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         LOG.info("Registering authentication on all urls, except: " + "/, /resources/**, /about/**");
-        http.authorizeRequests().antMatchers("/", "/resources/**", "/about").permitAll().anyRequest().authenticated();
+        http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**").permitAll().anyRequest()
+                .authenticated();
 
         LOG.info("Registering custom AuthenticationEntryPoint: " + authenticationEntryPoint);
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);
