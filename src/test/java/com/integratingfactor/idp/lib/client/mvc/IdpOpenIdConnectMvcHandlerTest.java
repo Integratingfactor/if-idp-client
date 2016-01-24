@@ -13,17 +13,16 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.integratingfactor.idp.lib.client.config.IdpClientConfig;
 import com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
-import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
+import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
-@ContextConfiguration(classes = { IdpClientConfig.class, IdpClientSecurityConfig.class })
+@ContextConfiguration(classes = { IdpTestMvcConfig.class, IdpClientSecurityConfig.class })
 @WebAppConfiguration
 public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
-    IdpOpenIdConnectMvcHandler client;
+    IdpTestMvcHandler client;
 
     @Autowired
     IdpOpenIdConnectClient openidConnectClient;
@@ -52,7 +51,7 @@ public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextT
         // send an authentication request with originating param
         MvcResult response = this.mockMvc
                 .perform(MockMvcRequestBuilders.post(IdpOpenIdConnectClient.pathSuffixLogin)
-                        .param(IdpOpenIdConnectMvcHandler.originatingParam, "index"))
+                        .param(IdpTestMvcHandler.originatingParam, "index"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 // .andExpect(MockMvcResultMatchers.redirectedUrl("/oauth/confirm_access"))
                 .andReturn();
@@ -65,13 +64,10 @@ public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextT
     public void testOpenIdConnectListenerReturnsToOriginator() throws Exception {
         // call the openid connect listener with a mock code grant response
         MvcResult response = this.mockMvc
-                .perform(MockMvcRequestBuilders.get(IdpOpenIdConnectClient.pathSuffixLogin)
-.param("code",
- "a mock invalid code")
-                        .sessionAttr(IdpOpenIdConnectClient.IdpRequestOriginatorKey, "/target"))
+                .perform(MockMvcRequestBuilders.get(IdpOpenIdConnectClient.pathSuffixLogin).param("code",
+                        "a mock invalid code"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-.andExpect(MockMvcResultMatchers.view()
-.name("redirect:" + IdpOpenIdConnectClient.pathSuffixLogin))
+                .andExpect(MockMvcResultMatchers.view().name("redirect:" + IdpOpenIdConnectClient.pathSuffixLogin))
                 .andReturn();
 
         System.out.println(("Response Status: " + response.getResponse().getStatus()));
@@ -90,13 +86,11 @@ public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextT
                 .perform(MockMvcRequestBuilders.get(IdpOpenIdConnectClient.pathSuffixLogin)
 .param(keys[0], values[0])
                         .param(keys[1], values[1]).param(keys[2], values[2]).param(keys[3], values[3])
-                        .param(keys[4], values[4])
-                        .sessionAttr(IdpOpenIdConnectClient.IdpRequestOriginatorKey, "/target"))
+                        .param(keys[4], values[4]))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
                 .andExpect(MockMvcResultMatchers.view().name("redirect:/target")).andReturn();
 
-        IdpTokenValidation user = (IdpTokenValidation) response.getRequest().getSession()
-                .getAttribute(IdpOpenIdConnectClient.IdpUserProfileKey);
+        IdpTokenValidation user = (IdpTokenValidation) response.getRequest().getSession();
         Assert.assertNotNull(user);
         System.out.println("User: " + user);
     }

@@ -13,7 +13,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.RedirectStrategy;
 
-import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
+import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
 /**
  * Authentication entry point to commence openid connect authentication

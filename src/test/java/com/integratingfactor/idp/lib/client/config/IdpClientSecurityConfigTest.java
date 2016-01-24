@@ -26,14 +26,14 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import com.integratingfactor.idp.lib.client.filter.IdpAuthenticationFailureHandler;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
-import com.integratingfactor.idp.lib.client.mvc.IdpOpenIdConnectMvcHandler;
-import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
+import com.integratingfactor.idp.lib.client.mvc.IdpTestMvcConfig;
+import com.integratingfactor.idp.lib.client.mvc.IdpTestMvcHandler;
+import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
-@ContextConfiguration(classes = { IdpClientSecurityConfig.class, IdpClientConfig.class })
+@ContextConfiguration(classes = { IdpClientSecurityConfig.class, IdpTestMvcConfig.class })
 @WebAppConfiguration
 public class IdpClientSecurityConfigTest extends AbstractTestNGSpringContextTests {
     @Autowired
@@ -46,13 +46,9 @@ public class IdpClientSecurityConfigTest extends AbstractTestNGSpringContextTest
     private AuthenticationManager authManager;
 
     @Autowired
-    IdpOpenIdConnectMvcHandler endpoint;
+    IdpTestMvcHandler endpoint;
 
     private MockMvc mockMvc;
-
-    @Autowired
-    @InjectMocks
-    IdpAuthenticationFailureHandler failureHandler;
 
     @Autowired
     @InjectMocks
@@ -96,14 +92,12 @@ public class IdpClientSecurityConfigTest extends AbstractTestNGSpringContextTest
         Mockito.when(client.getValidatedUser(Mockito.anyMap())).thenReturn(null);
 
         MvcResult response = this.mockMvc.perform(MockMvcRequestBuilders.get(IdpOpenIdConnectClient.pathSuffixLogin))
-                .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrl(TestIdpUrl))
+                .andExpect(MockMvcResultMatchers.status().is(HttpStatus.UNAUTHORIZED.value()))
                 .andReturn();
 
         Mockito.verify(client).getValidatedUser(Mockito.anyMap());
 
         System.out.println(("Response Status: " + response.getResponse().getStatus()));
-        System.out.println("Redirected url: " + response.getResponse().getRedirectedUrl());
     }
 
     @Test

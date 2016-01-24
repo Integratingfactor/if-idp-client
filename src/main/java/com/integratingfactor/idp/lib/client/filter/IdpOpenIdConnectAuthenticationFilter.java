@@ -16,15 +16,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
-import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
-import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
+import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
 public class IdpOpenIdConnectAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
     private static Logger LOG = Logger.getLogger(IdpOpenIdConnectAuthenticationFilter.class.getName());
@@ -35,31 +31,19 @@ public class IdpOpenIdConnectAuthenticationFilter extends AbstractAuthentication
     @Autowired
     AuthenticationManager authManager;
 
-    @Autowired
-    IdpAuthenticationFailureHandler failureHandler;
-
-    private RequestCache requestCache = new HttpSessionRequestCache();
-
-    private SavedRequestAwareAuthenticationSuccessHandler successHandler = new SavedRequestAwareAuthenticationSuccessHandler();
-
     public IdpOpenIdConnectAuthenticationFilter() {
         super(new AntPathRequestMatcher(IdpOpenIdConnectClient.pathSuffixLogin, "GET"));
-        /* super(new AntPathRequestMatcher("/**")); */
         LOG.info("Filter has been created and in place for openid connect authentication....");
     }
 
     protected IdpOpenIdConnectAuthenticationFilter(RequestMatcher requiresAuthenticationRequestMatcher) {
         super(requiresAuthenticationRequestMatcher);
-        // TODO Auto-generated constructor stub
         LOG.warning("Not sure why this constructor was called ????");
     }
 
     @Override
     public void afterPropertiesSet() {
         super.setAuthenticationManager(authManager);
-        super.setAuthenticationFailureHandler(failureHandler);
-        // successHandler.setRequestCache(requestCache);
-        // super.setAuthenticationSuccessHandler(successHandler);
     }
 
     /**
@@ -70,8 +54,6 @@ public class IdpOpenIdConnectAuthenticationFilter extends AbstractAuthentication
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
             throws AuthenticationException, IOException, ServletException {
         LOG.info("attempt to authenticate request: " + request.getRequestURI());
-        // // save the request in cache
-        // requestCache.saveRequest(request, response);
         IdpTokenValidation userAuth = null;
         // first get user from session if already authenticated
         try {
@@ -98,25 +80,5 @@ public class IdpOpenIdConnectAuthenticationFilter extends AbstractAuthentication
         }
         LOG.info("User has been authenticated with role: " + userAuth.getAuthorities().toArray()[0]);
         return userAuth;
-    }
-
-    public Authentication attemptAuthenticationOld(HttpServletRequest request, HttpServletResponse response)
-            throws AuthenticationException, IOException, ServletException {
-        LOG.info("attempt to authenticate request: " + request.getRequestURI());
-
-        // check if this is a redirect from IDP service after authentication
-        // entry point sent there?
-
-        // get the user profile from session context
-        IdpTokenValidation user = (IdpTokenValidation) request.getSession(true)
-                .getAttribute(IdpOpenIdConnectClient.IdpUserProfileKey);
-        if (user == null) {
-            LOG.info("Openid connect user information does not exists, user is not yet authenticated");
-            // openid connect authentication is not done yet
-            throw new AuthenticationCredentialsNotFoundException("OpenID Connect user not found");
-        }
-
-        LOG.info("User has been authenticated already...");
-        return user;
     }
 }

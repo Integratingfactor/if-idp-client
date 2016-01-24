@@ -8,17 +8,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
-import com.integratingfactor.idp.lib.client.filter.IdpAuthenticationFailureHandler;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
-import com.integratingfactor.idp.lib.client.service.IdpOpenIdConnectClient;
+import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
 @Configuration
 @EnableWebSecurity
@@ -32,19 +30,10 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     IdpOpenIdConnectAuthenticationFilter authenticationFilter;
 
-    @Autowired
-    IdpAuthenticationFailureHandler failureHandler;
-
     @Override
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public IdpAuthenticationFailureHandler idpAuthenticationFailureHandler() {
-        LOG.info("Creating instance of IdpAuthenticationFailureHandler");
-        return new IdpAuthenticationFailureHandler();
     }
 
     @Bean
@@ -74,10 +63,6 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // LOG.info("Registering login url: " +
-        // IdpOpenIdConnectClient.pathSuffixLogin);
-        // http.formLogin().loginPage(IdpOpenIdConnectClient.pathSuffixLogin);
-
         LOG.info("Registering authentication on all urls, except: " + "/, /resources/**, /about/**");
         http.authorizeRequests().antMatchers("/", "/resources/**", "/about").permitAll().anyRequest().authenticated();
 
@@ -92,31 +77,6 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
 
         LOG.info("Registering custom AuthenticationFilter: " + authenticationFilter);
         http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        // LOG.info("configuring open id connect authentication filter ...");
-        // http.formLogin().loginPage(IdpOpenIdConnectClient.pathSuffixLogin).and().logout()
-        // .logoutUrl(IdpOpenIdConnectClient.pathSuffixLogout).and().authorizeRequests()
-        // /*
-        // * .antMatchers(IdpOpenIdConnectClient.pathSuffixLogin,
-        // * IdpOpenIdConnectClient.pathSuffixLogout) .permitAll()
-        // */.anyRequest().authenticated()
-        // /*http.authorizeRequests().antMatchers("/**").hasAuthority("USER")*/.and().addFilterBefore(
-        // new IdpOpenIdConnectAuthenticationFilter(),
-        // UsernamePasswordAuthenticationFilter.class)
-        // // disable CSRF protection for openid connect based
-        // // authentication
-        // .csrf().disable();
-    }
-
-    /**
-     * check this if this is really needed? if yes, then will need to add client
-     * side user details service for openid connect based authenticated users
-     */
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // LOG.info("Using in-memory user details service with hard coded users:
-        // \"user\" and \"admin\"");
-        // auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
     }
     
     /**
