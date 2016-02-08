@@ -37,12 +37,18 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     @JsonProperty("scope")
     private Set<String> scopes;
 
+    @JsonProperty("roles")
+    private Set<String> roles;
+
     // for now will stick to single tenant per app
     @JsonProperty("authorities")
     private Set<GrantedAuthority> authorities;
 
     @JsonProperty("client_id")
     private String clientId;
+
+    @JsonProperty("org")
+    private String org;
 
     // this is the openid connect ID token
     @JsonProperty("id_token")
@@ -74,8 +80,18 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     }
 
     @JsonProperty("scope")
-    public void setScopes(Set<String> scopes) {
-        this.scopes = scopes;
+    public void setScopes(Set<String> roles) {
+        this.roles = roles;
+    }
+
+    @JsonProperty("roles")
+    public Set<String> getRoles() {
+        return scopes;
+    }
+
+    @JsonProperty("roles")
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 
     @JsonProperty("authorities")
@@ -99,6 +115,16 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     @JsonProperty("client_id")
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    @JsonProperty("org")
+    public String getOrg() {
+        return org;
+    }
+
+    @JsonProperty("org")
+    public void setOrg(String org) {
+        this.org = org;
     }
 
     @JsonProperty("id_token")

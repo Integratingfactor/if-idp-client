@@ -114,7 +114,7 @@ public class IdpOauthClientTest extends Assertion {
     @Test
     public void testThatGetsRefreshTokenFromIdp() throws Exception {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
-        token.setRefreshToken(new DefaultOAuth2RefreshToken("89ce0b64-6366-4358-a9c4-41c49c709062"));
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("3a86270d-d60e-4147-ab9a-e3ad7a21d2d2"));
         OAuth2AccessToken refresh = client.getRefreshToken(token);
         assertNotNull(refresh);
         System.out.println("Token: " + new ObjectMapper().writeValueAsString(refresh));
@@ -131,7 +131,7 @@ public class IdpOauthClientTest extends Assertion {
     @Test
     public void testThatValidatesTokenWithIdp() throws Exception {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
-        token.setRefreshToken(new DefaultOAuth2RefreshToken("89ce0b64-6366-4358-a9c4-41c49c709062"));
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("3a86270d-d60e-4147-ab9a-e3ad7a21d2d2"));
         OAuth2AccessToken refresh = client.getRefreshToken(token);
         assertNotNull(refresh);
         IdpTokenValidation validation = client.validateToken(refresh);
