@@ -2,13 +2,16 @@ package com.integratingfactor.idp.lib.client.model;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,17 +30,17 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     @JsonProperty("user_name")
     private String userId;
 
-    @JsonProperty("first_name")
+    @JsonProperty("given_name")
     private String firstName;
 
-    @JsonProperty("last_name")
+    @JsonProperty("family_name")
     private String lastName;
 
     // this is the scope of the app
     @JsonProperty("scope")
     private Set<String> scopes;
 
-    @JsonProperty("roles")
+    @JsonProperty("org_roles")
     private Set<String> roles;
 
     // for now will stick to single tenant per app
@@ -47,59 +50,51 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     @JsonProperty("client_id")
     private String clientId;
 
-    @JsonProperty("org")
+    @JsonProperty("org_id")
     private String org;
 
     // this is the openid connect ID token
     @JsonProperty("id_token")
     private String idToken;
 
-    @JsonProperty("exp")
+    Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
     public String getExp() {
         return exp;
     }
 
-    @JsonProperty("exp")
     public void setExp(String exp) {
         this.exp = exp;
     }
 
-    @JsonProperty("user_name")
     public String getUserId() {
         return userId;
     }
 
-    @JsonProperty("user_name")
     public void setUserId(String userId) {
         this.userId = userId;
     }
 
-    @JsonProperty("scope")
     public Set<String> getScopes() {
         return scopes;
     }
 
-    @JsonProperty("scope")
     public void setScopes(Set<String> roles) {
         this.roles = roles;
     }
 
-    @JsonProperty("roles")
     public Set<String> getRoles() {
         return scopes;
     }
 
-    @JsonProperty("roles")
     public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 
-    @JsonProperty("authorities")
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
     }
 
-    @JsonProperty("authorities")
     public void setAuthorities(Set<String> authorities) {
         this.authorities = new HashSet<GrantedAuthority>();
         for (String authority : authorities) {
@@ -107,52 +102,42 @@ public class IdpTokenValidation  implements Serializable, Authentication {
         }
     }
 
-    @JsonProperty("client_id")
     public String getClientId() {
         return clientId;
     }
 
-    @JsonProperty("client_id")
     public void setClientId(String clientId) {
         this.clientId = clientId;
     }
 
-    @JsonProperty("org")
     public String getOrg() {
         return org;
     }
 
-    @JsonProperty("org")
     public void setOrg(String org) {
         this.org = org;
     }
 
-    @JsonProperty("id_token")
     public String getIdToken() {
         return idToken;
     }
 
-    @JsonProperty("id_token")
     public void setIdToken(String idToken) {
         this.idToken = idToken;
     }
 
-    @JsonProperty("first_name")
     public String getFirstName() {
         return firstName;
     }
 
-    @JsonProperty("first_name")
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
 
-    @JsonProperty("last_name")
     public String getLastName() {
         return lastName;
     }
 
-    @JsonProperty("last_name")
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
@@ -191,5 +176,14 @@ public class IdpTokenValidation  implements Serializable, Authentication {
     @Override
     public String toString() {
         return getUserId();
+    }
+
+    public Map<String, Object> getAdditionalProperties() {
+        return additionalProperties;
+    }
+
+    @JsonAnySetter
+    public void setAdditionalProperties(String key, Object value) {
+        additionalProperties.put(key, value);
     }
 }

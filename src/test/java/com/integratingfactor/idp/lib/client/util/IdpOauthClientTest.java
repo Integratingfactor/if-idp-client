@@ -1,6 +1,5 @@
 package com.integratingfactor.idp.lib.client.util;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.DefaultOAuth2RefreshToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -9,19 +8,20 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 import org.testng.asserts.Assertion;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 
 public class IdpOauthClientTest extends Assertion {
 
     IdpOauthClient client;
 
-    static final String testClientId = "test.oauth2.code.client";
+    static final String testClientId = "test.backend.client";
 
-    String testClientSecret = "";
+    String testClientSecret = "secret";
 
     static final String idpHost = "https://if-idp.appspot.com";
 
-    static final String testRedirectUri = "http://localhost";
+    static final String testRedirectUri = "http://localhost:8080/openid/login";
 
     @BeforeTest
     public void setup() {
@@ -86,8 +86,8 @@ public class IdpOauthClientTest extends Assertion {
 
     // uncomment the following to test against real IDP with real approval
     // response from IDP for the following approval URL:
-    // https://if-idp.appspot.com/oauth/authorize?client_id=test.oauth2.code.client.secret&response_type=code&redirect_uri=http://localhost
-    static final String approvalResponse = "code=51897aea-8fb7-4699-b56f-3f2c5285c937";
+    // https://if-idp.appspot.com/oauth/authorize?client_id=test.backend.client&response_type=code&redirect_uri=http://localhost:8080/openid/login
+    static final String approvalResponse = "code=0340a4b5-7aa5-4eb1-bd0f-1b27c99708b6";
 
     // @Test
     public void testThatGetTokenFromIdpForAuthorizationCode() throws Exception {
@@ -114,7 +114,7 @@ public class IdpOauthClientTest extends Assertion {
     @Test
     public void testThatGetsRefreshTokenFromIdp() throws Exception {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
-        token.setRefreshToken(new DefaultOAuth2RefreshToken("3a86270d-d60e-4147-ab9a-e3ad7a21d2d2"));
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("fd4f0b04-8347-4d76-a82c-383109c950bd"));
         OAuth2AccessToken refresh = client.getRefreshToken(token);
         assertNotNull(refresh);
         System.out.println("Token: " + new ObjectMapper().writeValueAsString(refresh));
@@ -131,7 +131,7 @@ public class IdpOauthClientTest extends Assertion {
     @Test
     public void testThatValidatesTokenWithIdp() throws Exception {
         DefaultOAuth2AccessToken token = new DefaultOAuth2AccessToken("some mock token value");
-        token.setRefreshToken(new DefaultOAuth2RefreshToken("3a86270d-d60e-4147-ab9a-e3ad7a21d2d2"));
+        token.setRefreshToken(new DefaultOAuth2RefreshToken("fd4f0b04-8347-4d76-a82c-383109c950bd"));
         OAuth2AccessToken refresh = client.getRefreshToken(token);
         assertNotNull(refresh);
         IdpTokenValidation validation = client.validateToken(refresh);
