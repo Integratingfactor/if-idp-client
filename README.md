@@ -23,7 +23,7 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.9-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -48,13 +48,14 @@ Above steps should install the library into your local maven repository, and you
   **Note: IDP Client configuration leaves following url paths available for unrestricted/public access: "/", "/resources/\*\*", "/about/\*\*"**
   * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:
   ```
-  idp.client.id=test.openid.code.client
-  idp.client.secret=
-  idp.client.encryption.key=
+  idp.client.id=test.backend.client
+  idp.client.secret=secret
+  idp.client.encryption.key=this.is.a.key
   idp.client.idp.host=https://if-idp.appspot.com
   idp.client.redirect.url=http://localhost:8080
   ```
-
+ > You can use above test client app parameters, or register a new app.
+ 
 ## How to access authenticated user information
 Once user is authenticated, their profile can be access using following example:  
 ```JAVA
