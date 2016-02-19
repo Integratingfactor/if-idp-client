@@ -48,8 +48,8 @@ public class IdpApiRbacDetails {
         return set;
     }
 
-    public void setRoles(Object roles) {
-        this.roles = toSet(roles);
+    public void setRoles(Set<String> roles) {
+        this.roles = roles;
     }
 
     public String getTenantId() {

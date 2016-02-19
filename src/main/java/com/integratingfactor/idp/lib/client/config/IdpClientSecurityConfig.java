@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.util.StringUtils;
 
+import com.integratingfactor.idp.lib.client.filter.IdpApiAuthFilter;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
@@ -45,6 +46,12 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     public IdpClientAuthProperties clientAuthProperties() {
         LOG.info("Creating instance of IdpClientAuthProperties");
         return new IdpClientAuthProperties();
+    }
+
+    @Bean
+    public IdpApiAuthFilter idpApiAuthFilter() {
+        LOG.info("Creating instance of IdpApiAuthFilter");
+        return new IdpApiAuthFilter();
     }
 
     @Bean
@@ -80,11 +87,16 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        LOG.info("Registering authentication on all urls, except: " + clientProperties.getAppClientPublicUrls());
-        http.authorizeRequests()
-                .antMatchers(StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls()))
-                .permitAll().anyRequest()
-                .authenticated();
+        String[] whiteListUrls;
+        if (clientProperties.getMiscProp("idp.client.api.path") != null) {
+            whiteListUrls = StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls() + ","
+                    + clientProperties.getMiscProp("idp.client.api.path"));
+        } else {
+            whiteListUrls = StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls());
+        }
+        LOG.info("Registering authentication on all urls, except: " + whiteListUrls);
+        http.authorizeRequests().antMatchers(whiteListUrls).permitAll().anyRequest().authenticated();
+        http.csrf().ignoringAntMatchers(whiteListUrls);
 
         LOG.info("Registering custom AuthenticationEntryPoint: " + authenticationEntryPoint);
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint);

@@ -23,11 +23,24 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
 * Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
+  * add API OAuth filter configuration in `web.xml`:
+  ```XML
+  <filter>
+      <filter-name>idpApiAuthFilter</filter-name>
+      <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+  <filter-mapping>
+      <filter-name>idpApiAuthFilter</filter-name>
+      <!-- make sure that below api url pattern is also listed
+      in the idp_client.properties file -->
+      <url-pattern>/api/v1/*</url-pattern>
+  </filter-mapping>
+  ```  
   * add Spring security filter configuration in `web.xml`:
   ```XML
   <filter>
@@ -60,6 +73,12 @@ Above steps should install the library into your local maven repository, and you
 	idp.client.redirect.url=http://localhost:8080
 	### white label publicly accessible url paths that should not require authentication
 	idp.client.public.urls=/,/about/**,/resources/**
+	##########################################################
+	######### when you enable below, make sure to
+	######### also configure corresponding OAuth filter
+	### App's API path
+	idp.client.api.path=/api/v1/**
+	##########################################################
   ```
  > You can use above test client app parameters, or register a new app.
  

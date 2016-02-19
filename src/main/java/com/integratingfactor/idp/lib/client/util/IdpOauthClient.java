@@ -205,7 +205,7 @@ public class IdpOauthClient {
      *            access token to be validated
      * @return validation details from IDP (or null if failed)
      */
-    public IdpTokenValidation validateToken(OAuth2AccessToken token) {
+    public IdpTokenValidation validateToken(String token) {
         LOG.info("validating access token");
         if (token == null) {
             LOG.warning("Cannot validate null access token");
@@ -216,7 +216,7 @@ public class IdpOauthClient {
         headers.set("Authorization", authToken);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         IdpTokenRequest req = new IdpTokenRequest();
-        req.setToken(token.getValue());
+        req.setToken(token);
         try {
             validation = restTemplate.postForEntity(idpHost + "/oauth/check_token",
                     new HttpEntity<MultiValueMap<String, String>>(req.toMap(), headers), IdpTokenValidation.class)

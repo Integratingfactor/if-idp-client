@@ -79,12 +79,12 @@ public class IdpTokenValidation  implements Serializable, Authentication {
         return scopes;
     }
 
-    public void setScopes(Set<String> roles) {
-        this.roles = roles;
+    public void setScopes(Set<String> scopes) {
+        this.scopes = scopes;
     }
 
     public Set<String> getRoles() {
-        return scopes;
+        return roles;
     }
 
     public void setRoles(Set<String> roles) {

@@ -17,12 +17,7 @@ public class IdpOpenIdConnectClient {
     @Autowired
     private IdpOauthClient oauthClient;
 
-    // static final String ClientIdKey = "idp.client.id";
-    // static final String ClientSecretKey = "idp.client.secret";
-    // static final String EncryptionKeyKey = "idp.client.encryption.key";
     String encryptionKey;
-    // static final String IdpHostKey = "idp.client.idp.host";
-    // static final String RedirectUrlKey = "idp.client.redirect.url";
 
     // this is the suffix where we are listening for IDP redirects for
     // authorization requests
@@ -37,21 +32,6 @@ public class IdpOpenIdConnectClient {
         this.encryptionKey = clientProperties.getAppClientEncryptionKey();
         LOG.info("OpenId Connect Client initialized");
     }
-
-    // /**
-    // * default constructor
-    // */
-    // public IdpOpenIdConnectClient() {
-    // }
-
-    // public IdpOpenIdConnectClient(String clientId, String clientSecret,
-    // String encryptionKey, String idpHost,
-    // String redirectUri) {
-    // oauthClient = new IdpOauthClient(clientId, clientSecret, idpHost,
-    // redirectUri + pathSuffixLogin);
-    // this.encryptionKey = encryptionKey;
-    // LOG.info("OpenId Connect Client initialized");
-    // }
 
     public String getAuthorizationUri() {
         return oauthClient.getAuthorizationUri();
@@ -69,6 +49,6 @@ public class IdpOpenIdConnectClient {
         // run a token validation, to get user details in validation
         // response
         LOG.info("Running validation to get user details");
-        return oauthClient.validateToken(token);
+        return oauthClient.validateToken(token.getValue());
     }
 }

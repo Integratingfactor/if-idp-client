@@ -134,7 +134,7 @@ public class IdpOauthClientTest extends Assertion {
         token.setRefreshToken(new DefaultOAuth2RefreshToken("fd4f0b04-8347-4d76-a82c-383109c950bd"));
         OAuth2AccessToken refresh = client.getRefreshToken(token);
         assertNotNull(refresh);
-        IdpTokenValidation validation = client.validateToken(refresh);
+        IdpTokenValidation validation = client.validateToken(refresh.getValue());
         assertNotNull(validation);
         System.out.println("Token validation: " + new ObjectMapper().writeValueAsString(validation));
         assertNotNull(validation.getUserId());
