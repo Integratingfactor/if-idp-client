@@ -24,8 +24,8 @@ public class IdpOpenIdConnectMvcHandlerTest extends AbstractTestNGSpringContextT
     @Autowired
     IdpTestMvcHandler client;
 
-    @Autowired
-    IdpOpenIdConnectClient openidConnectClient;
+    // @Autowired
+    // IdpOpenIdConnectClient openidConnectClient;
 
     private MockMvc mockMvc;
 

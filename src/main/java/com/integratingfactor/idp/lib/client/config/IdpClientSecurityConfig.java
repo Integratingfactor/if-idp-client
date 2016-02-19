@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
+import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
 @Configuration
@@ -44,6 +45,12 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     public IdpClientAuthProperties clientAuthProperties() {
         LOG.info("Creating instance of IdpClientAuthProperties");
         return new IdpClientAuthProperties();
+    }
+
+    @Bean
+    public IdpOauthClient idpOauthClient() {
+        LOG.info("Creating instance of IdpOauthClient");
+        return new IdpOauthClient();
     }
 
     @Bean

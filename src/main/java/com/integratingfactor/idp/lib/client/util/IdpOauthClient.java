@@ -4,7 +4,10 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -16,6 +19,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import com.integratingfactor.idp.lib.client.config.IdpClientAuthProperties;
 import com.integratingfactor.idp.lib.client.model.IdpTokenRequest;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 
@@ -38,7 +42,23 @@ public class IdpOauthClient {
 
     private String authToken;
 
+    @Autowired
+    IdpClientAuthProperties clientProperties;
+
+    @PostConstruct
+    public void setup() {
+        initialize(clientProperties.getAppClientId(), clientProperties.getAppClientSecret(),
+                clientProperties.getIdpHostUrl(), clientProperties.getAppRedirectUrl());
+    }
+
+    public IdpOauthClient() {
+    }
+
     public IdpOauthClient(String clientId, String clientSecret, String idpHost, String redirectUri) {
+        initialize(clientId, clientSecret, idpHost, redirectUri);
+    }
+
+    public void initialize(String clientId, String clientSecret, String idpHost, String redirectUri) {
         if (StringUtils.isEmpty(clientId)) {
             LOG.warning("Client ID cannot be empty");
             throw new RuntimeException("Client ID cannot be empty");
@@ -52,9 +72,9 @@ public class IdpOauthClient {
             LOG.warning("Redirect uri cannot be empty");
             throw new RuntimeException("Redirect uri cannot be empty");
         }
-        this.redirectUri = redirectUri;
+        this.redirectUri = redirectUri + IdpOpenIdConnectClient.pathSuffixLogin;
         authorizationUrl = idpHost + "/oauth/authorize?client_id=" + clientId + "&response_type=code&redirect_uri="
-                + redirectUri;
+                + this.redirectUri;
         if (clientSecret == null) {
             clientSecret = "";
         }
