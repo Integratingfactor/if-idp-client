@@ -22,8 +22,8 @@ import org.springframework.util.StringUtils;
 
 import com.integratingfactor.idp.lib.client.config.IdpClientAuthProperties;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
+import com.integratingfactor.idp.lib.client.rbac.IdpApiRbacDetails;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
-import com.integratingfactor.idp.lib.rbac.IdpApiRbacDetails;
 
 /**
  * below implementation does not works as expected, after successful

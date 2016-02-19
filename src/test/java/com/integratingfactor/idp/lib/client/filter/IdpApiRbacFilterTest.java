@@ -19,7 +19,7 @@ import com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig;
 @WebAppConfiguration
 public class IdpApiRbacFilterTest extends AbstractTestNGSpringContextTests {
 
-    public static final String VALID_ACCESS_TOKEN = "25175254-08ca-4d12-9973-751dc8b85f4f";
+    public static final String VALID_ACCESS_TOKEN = "31f48969-3fe4-4219-92a2-395aee9e3bb9";
 
     @Autowired
     IdpTestApiEndpoint endpoint;

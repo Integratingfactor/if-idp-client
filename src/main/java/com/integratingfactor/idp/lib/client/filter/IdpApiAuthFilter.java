@@ -17,10 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
+import com.integratingfactor.idp.lib.client.rbac.IdpApiRbacDetails;
+import com.integratingfactor.idp.lib.client.rbac.IdpRbacAccessDeniedException;
+import com.integratingfactor.idp.lib.client.rbac.IdpRbacAuthenticationException;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
-import com.integratingfactor.idp.lib.rbac.IdpApiRbacDetails;
-import com.integratingfactor.idp.lib.rbac.IdpRbacAccessDeniedException;
-import com.integratingfactor.idp.lib.rbac.IdpRbacAuthenticationException;
 
 public class IdpApiAuthFilter extends OncePerRequestFilter {
     private static Logger LOG = Logger.getLogger(IdpApiAuthFilter.class.getName());

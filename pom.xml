@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-client</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.1.2-SNAPSHOT</version>
   <name>Integratingfactor.com IDP Client Library</name>
   <description>Integratingfactor.com IDP Client Library</description>
   <properties>
@@ -40,6 +40,16 @@
 		<artifactId>spring-security-jwt</artifactId>
 		<version>1.0.3.RELEASE</version>
 	</dependency>
+	  <dependency>
+	  	<groupId>org.aspectj</groupId>
+	  	<artifactId>aspectjrt</artifactId>
+	  	<version>1.7.4</version>
+	  </dependency>
+	  <dependency>
+	  	<groupId>org.aspectj</groupId>
+	  	<artifactId>aspectjweaver</artifactId>
+	  	<version>1.7.4</version>
+	  </dependency>
    <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-core</artifactId>

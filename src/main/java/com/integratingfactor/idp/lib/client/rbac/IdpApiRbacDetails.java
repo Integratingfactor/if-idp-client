@@ -1,4 +1,4 @@
-package com.integratingfactor.idp.lib.rbac;
+package com.integratingfactor.idp.lib.client.rbac;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;

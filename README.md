@@ -23,7 +23,7 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.2-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -58,7 +58,37 @@ Above steps should install the library into your local maven repository, and you
   <bean id="idpClientSecurityConfig"
   class="com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig" />  
   ```  
-  **Note: IDP Client configuration leaves following url paths available for unrestricted/public access: "/", "/resources/\*\*", "/about/\*\*"**
+  * enable AspectJ auto proxy wherever the API endpoint beans are being created
+    * if API endpoint beans are being created with XML configuration, then need to use `<aop:aspectj-autoproxy/>` as following
+    ```XML
+    <beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <aop:aspectj-autoproxy/>
+    ```
+    * if using Javaconfig `@Configuration` and `@EnableWebMvc` class to create endpoint beans, then need use `@EnableAspectJAutoProxy` as following:
+    ```JAVA
+    @Configuration
+@EnableWebMvc
+@EnableAspectJAutoProxy
+public class IdpRbacTestApiEndpointConfig {
+    private static Logger LOG = Logger.getLogger(IdpRbacTestApiEndpointConfig.class.getName());
+
+    @Bean
+    public IdpRbacTestApiEndpoint idpRbacTestApi() {
+        LOG.info("Creating instance of IdpRbacTestApiEndpoint");
+        return new IdpRbacTestApiEndpoint();
+    }
+}
+    ```
   * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:
   ```
 	### app's client id from app registration with IDP service
@@ -92,4 +122,43 @@ Once user is authenticated, their profile can be access using following example:
     } catch (ClassCastException e) {
         LOG.info("User is unauthenticated");
     }
+```
+## How to implement RBAC
+RBAC can be implemented on per API endpoint by using the `@IdpRbacPolicy` annotations as following:
+```JAVA
+@RestController
+public class PingApiEndpoint {
+    private static Logger LOG = Logger.getLogger(PingApiEndpoint.class.getName());
+
+    @RequestMapping(value = "/api/v1/ping/admin")
+    @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "ADMIN")
+    public Pong pingAdmin(HttpServletRequest request) {
+        LOG.info("Ping request from " + request.getAttribute(IdpApiAuthFilter.IdpTokenRbacDetails));
+        return new Pong("Hello Admin!");
+    }
+
+    @RequestMapping(value = "/api/v1/ping/user")
+    @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "USER")
+    public Pong pingUser(HttpServletRequest request) {
+        LOG.info("Ping request from " + request.getAttribute(IdpApiAuthFilter.IdpTokenRbacDetails));
+        return new Pong("Hello User!");
+    }
+
+    public static class Pong {
+        private String message;
+
+        public Pong(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
+
+}
 ```

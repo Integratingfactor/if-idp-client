@@ -1,4 +1,4 @@
-package com.integratingfactor.idp.lib.rbac;
+package com.integratingfactor.idp.lib.client.rbac;
 
 public abstract class IdpRbacException extends RuntimeException {
     

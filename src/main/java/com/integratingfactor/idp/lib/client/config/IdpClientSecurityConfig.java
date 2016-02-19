@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import com.integratingfactor.idp.lib.client.filter.IdpApiAuthFilter;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
+import com.integratingfactor.idp.lib.client.rbac.IdpRbacService;
 import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 import com.integratingfactor.idp.lib.client.util.IdpOpenIdConnectClient;
 
@@ -40,6 +41,12 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public IdpRbacService IdpRbacService() {
+        LOG.info("Creating instance of IdpRbacService");
+        return new IdpRbacService();
     }
 
     @Bean
