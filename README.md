@@ -23,7 +23,7 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.0.9-SNAPSHOT</version>
+    <version>0.1.0-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -48,11 +48,18 @@ Above steps should install the library into your local maven repository, and you
   **Note: IDP Client configuration leaves following url paths available for unrestricted/public access: "/", "/resources/\*\*", "/about/\*\*"**
   * provide following configurations in resource file `idp_client.properties` in your class path or export in environment:
   ```
-  idp.client.id=test.backend.client
-  idp.client.secret=secret
-  idp.client.encryption.key=this.is.a.key
-  idp.client.idp.host=https://if-idp.appspot.com
-  idp.client.redirect.url=http://localhost:8080
+	### app's client id from app registration with IDP service
+	idp.client.id=test.backend.client
+	### app's client secret as provided during app registration (required for backend apps)
+	idp.client.secret=This.is.a.secret
+	### app's encryption key for openid connect ID token as provided during app registration (optional)
+	idp.client.encryption.key=This.is.an.encrypted.key
+	### IDP service url (why is this needed, wouldn't it always be a well known public url)?
+	idp.client.idp.host=https://if-idp.appspot.com
+	### App's redirect url (should be one of the urls provided during app registration)
+	idp.client.redirect.url=http://localhost:8080
+	### white label publicly accessible url paths that should not require authentication
+	idp.client.public.urls=/,/about/**,/resources/**
   ```
  > You can use above test client app parameters, or register a new app.
  

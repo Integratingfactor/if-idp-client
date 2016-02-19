@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -47,6 +48,9 @@ public class IdpClientSecurityConfigTest extends AbstractTestNGSpringContextTest
 
     @Autowired
     IdpTestMvcHandler endpoint;
+
+    @Autowired
+    IdpClientAuthProperties clientProperties;
 
     private MockMvc mockMvc;
 
@@ -84,6 +88,25 @@ public class IdpClientSecurityConfigTest extends AbstractTestNGSpringContextTest
     public void securityConfigurationLoads() {
         Assert.assertNotNull(authManager);
         Assert.assertNotNull(springSecurityFilterChain);
+    }
+
+    @Test
+    public void testPublicUrlsAccess() throws Exception {
+        // mock openid client to return null user for the request
+        Mockito.when(client.getValidatedUser(Mockito.anyMap())).thenReturn(null);
+        System.out.println("Public urls: " + clientProperties.getAppClientPublicUrls());
+        System.out.println("Testing call to: "
+                + StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls())[0]);
+
+        for (String url : StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls())) {
+            if (url.contains("**")) {
+                url = url.replace("**", "") + "/some/random/suffix";
+            }
+            this.mockMvc.perform(MockMvcRequestBuilders.get(url))
+                    .andExpect(MockMvcResultMatchers.status().is(HttpStatus.NOT_FOUND.value())).andReturn();
+        }
+
+        Mockito.verify(client, Mockito.times(0)).getValidatedUser(Mockito.anyMap());
     }
 
     @Test

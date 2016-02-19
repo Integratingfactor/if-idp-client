@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
+import org.springframework.util.StringUtils;
 
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationEntryPoint;
 import com.integratingfactor.idp.lib.client.filter.IdpOpenIdConnectAuthenticationFilter;
@@ -30,10 +31,19 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     IdpOpenIdConnectAuthenticationFilter authenticationFilter;
 
+    @Autowired
+    IdpClientAuthProperties clientProperties;
+
     @Override
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public IdpClientAuthProperties clientAuthProperties() {
+        LOG.info("Creating instance of IdpClientAuthProperties");
+        return new IdpClientAuthProperties();
     }
 
     @Bean
@@ -63,8 +73,10 @@ public class IdpClientSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        LOG.info("Registering authentication on all urls, except: " + "/, /resources/**, /about/**");
-        http.authorizeRequests().antMatchers("/", "/resources/**", "/about/**").permitAll().anyRequest()
+        LOG.info("Registering authentication on all urls, except: " + clientProperties.getAppClientPublicUrls());
+        http.authorizeRequests()
+                .antMatchers(StringUtils.commaDelimitedListToStringArray(clientProperties.getAppClientPublicUrls()))
+                .permitAll().anyRequest()
                 .authenticated();
 
         LOG.info("Registering custom AuthenticationEntryPoint: " + authenticationEntryPoint);
