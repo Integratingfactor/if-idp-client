@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +14,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @JsonInclude(Include.NON_NULL)
 public class IdpTokenRequest {
 
-    private static final String[] keys = { "grant_type", "code", "redirect_uri", "refresh_token", "token" };
+    private static final String[] keys = { "grant_type", "code", "redirect_uri", "refresh_token", "token", "username",
+            "password" };
     private Map<String, String> map = new HashMap<String, String>();
 
     @JsonProperty("grant_type")
@@ -30,6 +32,12 @@ public class IdpTokenRequest {
 
     @JsonProperty("token")
     private String token;
+
+    @JsonIgnore
+    private String username;
+
+    @JsonIgnore
+    private String password;
 
     @JsonProperty("grant_type")
     public String getGrantType() {
@@ -94,5 +102,27 @@ public class IdpTokenRequest {
             }
         }
         return map;
+    }
+
+    @JsonProperty("username")
+    public String getUsername() {
+        return username;
+    }
+
+    @JsonProperty("username")
+    public void setUsername(String username) {
+        this.username = username;
+        map.put("username", username);
+    }
+
+    @JsonProperty("password")
+    public String getPassword() {
+        return password;
+    }
+
+    @JsonProperty("password")
+    public void setPassword(String password) {
+        this.password = password;
+        map.put("password", password);
     }
 }

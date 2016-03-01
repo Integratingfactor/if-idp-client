@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-client</artifactId>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.3-SNAPSHOT</version>
   <name>Integratingfactor.com IDP Client Library</name>
   <description>Integratingfactor.com IDP Client Library</description>
   <properties>

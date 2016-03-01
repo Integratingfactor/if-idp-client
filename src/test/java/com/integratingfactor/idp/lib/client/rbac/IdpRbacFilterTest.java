@@ -11,22 +11,25 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig;
 import com.integratingfactor.idp.lib.client.filter.IdpApiAuthFilter;
+import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 
 @ContextConfiguration(classes = { IdpClientSecurityConfig.class, IdpRbacTestApiEndpointConfig.class })
 @WebAppConfiguration
 public class IdpRbacFilterTest extends AbstractTestNGSpringContextTests {
 
-    public static final String USERS_ORG_ACCESS_TOKEN = "31f48969-3fe4-4219-92a2-395aee9e3bb9";
-
-    public static final String NON_USERS_ORG_ACCESS_TOKEN = "25175254-08ca-4d12-9973-751dc8b85f4f";
+    private String USERS_ORG_ACCESS_TOKEN = null;
 
     @Autowired
     IdpRbacTestApiEndpoint endpoint;
+
+    @Autowired
+    IdpOauthClient oauthClient;
 
     @Autowired
     IdpRbacService aspect;
@@ -38,6 +41,11 @@ public class IdpRbacFilterTest extends AbstractTestNGSpringContextTests {
     private FilterChainProxy springSecurityFilterChain;
 
     private MockMvc mockMvc;
+
+    @BeforeClass
+    public void init() {
+        USERS_ORG_ACCESS_TOKEN = oauthClient.getAccessToken().getValue();
+    }
 
     @BeforeMethod
     public void setup() {

@@ -89,7 +89,25 @@ public class IdpOauthClient {
 
     private static final String AuthCode = "code";
     private static final String AccessToken = "access_token";
+    private static final String ResourceOwner = "password";
     private static final String Error = "error";
+
+    private OAuth2AccessToken requestAccessToken(IdpTokenRequest req) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", authToken);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        try {
+            return restTemplate.postForEntity(idpHost + "/oauth/token",
+                    new HttpEntity<MultiValueMap<String, String>>(req.toMap(), headers), OAuth2AccessToken.class)
+                    .getBody();
+
+        } catch (HttpClientErrorException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage() + " : " + e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            LOG.warning("Error in IDP request: " + e.getMessage());
+        }
+        return null;
+    }
 
     /**
      * method to get access token based on authorization response from IDP
@@ -109,24 +127,11 @@ public class IdpOauthClient {
         if (params.containsKey(AuthCode)) {
             // this is auth code response
             LOG.info("Authorization code grant");
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", authToken);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             IdpTokenRequest req = new IdpTokenRequest();
             req.setCode(params.get(AuthCode));
             req.setGrantType("authorization_code");
             req.setRedirectUri(redirectUri);
-            try {
-                token = restTemplate.postForEntity(idpHost + "/oauth/token",
-                        new HttpEntity<MultiValueMap<String, String>>(req.toMap(), headers),
-                                OAuth2AccessToken.class)
-                        .getBody();
-
-            } catch (HttpClientErrorException e) {
-                LOG.warning("Error in IDP request: " + e.getMessage() + " : " + e.getResponseBodyAsString());
-            } catch (RestClientException e) {
-                LOG.warning("Error in IDP request: " + e.getMessage());
-            }
+            token = requestAccessToken(req);
         } else if (params.containsKey(AccessToken)) {
             // this is implicit grant for access token
             LOG.info("implicit token grant");
@@ -146,14 +151,16 @@ public class IdpOauthClient {
     }
 
     /**
-     * this method is not a valid method for endpoint applications, because they
-     * will always require user's browser/user-agent to be redirected to the IDP
-     * service and complete the authentication and authorization.
+     * request access token with resource owner password grant
      *
      * @return always returns null
      */
     public OAuth2AccessToken getAccessToken() {
-        return null;
+        IdpTokenRequest req = new IdpTokenRequest();
+        req.setGrantType(ResourceOwner);
+        req.setUsername(clientProperties.getAppServiceAccount());
+        req.setPassword(clientProperties.getAppServicePassword());
+        return requestAccessToken(req);
     }
 
     /**
