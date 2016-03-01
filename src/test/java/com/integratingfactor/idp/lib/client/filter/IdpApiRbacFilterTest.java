@@ -10,19 +10,24 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.integratingfactor.idp.lib.client.config.IdpClientSecurityConfig;
+import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 
 @ContextConfiguration(classes = { IdpClientSecurityConfig.class, IdpTestApiEndpointConfig.class })
 @WebAppConfiguration
 public class IdpApiRbacFilterTest extends AbstractTestNGSpringContextTests {
 
-    public static final String VALID_ACCESS_TOKEN = "31f48969-3fe4-4219-92a2-395aee9e3bb9";
+    private String VALID_ACCESS_TOKEN = null;
 
     @Autowired
     IdpTestApiEndpoint endpoint;
+
+    @Autowired
+    IdpOauthClient oauthClient;
 
     @Autowired
     private IdpApiAuthFilter apiAuthFilter;
@@ -31,6 +36,11 @@ public class IdpApiRbacFilterTest extends AbstractTestNGSpringContextTests {
     private FilterChainProxy springSecurityFilterChain;
 
     private MockMvc mockMvc;
+
+    @BeforeClass
+    public void init() {
+        VALID_ACCESS_TOKEN = oauthClient.getAccessToken().getValue();
+    }
 
     @BeforeMethod
     public void setup() {

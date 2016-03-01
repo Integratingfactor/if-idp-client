@@ -13,7 +13,7 @@ public class IdpRbacTestApiEndpoint {
     public static final String API_ENDPOINT_UNAUTHORIZED = "/api/v1/unauthorized";
 
     @RequestMapping(API_ENDPOINT_AUTHORIZED)
-    @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "USER")
+    @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "GUEST")
     public Pong pingAuthorized(HttpServletRequest request) {
         return new Pong("Hello " + request.getMethod());
     }

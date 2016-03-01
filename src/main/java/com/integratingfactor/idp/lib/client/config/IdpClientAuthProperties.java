@@ -17,6 +17,10 @@ public class IdpClientAuthProperties {
     String appClientId = "test.backend.client";
     static final String EnvClientSecretKey = "idp.client.secret";
     String appClientSecret = "secret";
+    static final String EnvClientServiceAccountKey = "idp.client.service.account";
+    String appClientServiceAccount = null;
+    static final String EnvClientServicePasswordKey = "idp.client.service.password";
+    String appClientServicePassword = null;
     static final String EnvClientEncryptionKey = "idp.client.encryption.key";
     String appClientEncryptionKey = null;
     static final String EnvIdpHostUrlKey = "idp.client.idp.host";
@@ -40,6 +44,8 @@ public class IdpClientAuthProperties {
         assert (appClientId != null);
         appClientSecret = getNotNull(EnvClientSecretKey, appClientSecret);
         assert (appClientSecret != null);
+        appClientServiceAccount = getNotNull(EnvClientServiceAccountKey, appClientServiceAccount);
+        appClientServicePassword = getNotNull(EnvClientServicePasswordKey, appClientServicePassword);
         appClientEncryptionKey = getNotNull(EnvClientEncryptionKey, appClientEncryptionKey);
         idpHostUrl = getNotNull(EnvIdpHostUrlKey, idpHostUrl);
         assert (idpHostUrl != null);
@@ -74,6 +80,14 @@ public class IdpClientAuthProperties {
 
     public String getAppClientPublicUrls() {
         return appClientPublicUrls;
+    }
+
+    public String getAppServiceAccount() {
+        return appClientServiceAccount;
+    }
+
+    public String getAppServicePassword() {
+        return appClientServicePassword;
     }
 
 }
