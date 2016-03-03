@@ -27,7 +27,7 @@ public class IdpRbacService {
 
     @Before("com.integratingfactor.idp.lib.client.rbac.IdpRbacService.accessControlledMethod(idpRbacPolicy)")
     public void doRbacValidation(IdpRbacPolicy idpRbacPolicy) {
-        IdpApiRbacDetails rbacDetails = (IdpApiRbacDetails) request.getAttribute(IdpApiAuthFilter.IdpTokenRbacDetails);
+        IdpApiRbacDetails rbacDetails = IdpApiAuthFilter.getRbacDetails();
         if (rbacDetails == null) {
             LOG.warning("Did not find any RBAC details in request: " + request.getRequestURI());
             throw new IdpRbacServerException("service not available");

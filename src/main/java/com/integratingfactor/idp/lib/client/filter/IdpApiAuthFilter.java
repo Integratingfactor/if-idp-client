@@ -14,8 +14,6 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 import com.integratingfactor.idp.lib.client.rbac.IdpApiRbacDetails;
 import com.integratingfactor.idp.lib.client.rbac.IdpRbacAccessDeniedException;
@@ -25,14 +23,25 @@ import com.integratingfactor.idp.lib.client.util.IdpOauthClient;
 public class IdpApiAuthFilter extends OncePerRequestFilter {
     private static Logger LOG = Logger.getLogger(IdpApiAuthFilter.class.getName());
 
-    public static final String IdpTokenRbacDetails = "IDP_TOKEN_RBAC_DETAILS";
+    // public static final String IdpTokenRbacDetails =
+    // "IDP_TOKEN_RBAC_DETAILS";
 
     public static final String AuthTokenType = OAuth2AccessToken.BEARER_TYPE;
 
     public static final int StartIndex = AuthTokenType.length() + 1;
 
+    private static ThreadLocal<IdpApiRbacDetails> rbacDetails = new ThreadLocal<IdpApiRbacDetails>();
+
     @Autowired
     private IdpOauthClient oauthClient;
+
+    public static IdpApiRbacDetails getRbacDetails() {
+        return rbacDetails.get();
+    }
+
+    private static void setRbacDetails(IdpApiRbacDetails details) {
+        rbacDetails.set(details);
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -46,8 +55,11 @@ public class IdpApiAuthFilter extends OncePerRequestFilter {
                 sendError(response, HttpStatus.UNAUTHORIZED, "Missing or incorrect authorization header");
                 return;
             }
-            request.setAttribute(IdpTokenRbacDetails, getRbacDetails(authorization.substring(StartIndex)));
+            // request.setAttribute(IdpTokenRbacDetails,
+            // getRbacDetails(authorization.substring(StartIndex)));
+            setRbacDetails(getRbacDetails(authorization.substring(StartIndex)));
             filterChain.doFilter(request, response);
+            setRbacDetails(null);
         } catch (IdpRbacAuthenticationException e) {
             sendError(response, HttpStatus.UNAUTHORIZED, e.getMessage());
             return;

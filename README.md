@@ -23,7 +23,7 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.1.3-SNAPSHOT</version>
+    <version>0.1.4-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
@@ -130,18 +130,15 @@ RBAC can be implemented on per API endpoint by using the `@IdpRbacPolicy` annota
 public class PingApiEndpoint {
     private static Logger LOG = Logger.getLogger(PingApiEndpoint.class.getName());
 
-    @RequestMapping(value = "/api/v1/ping/admin")
-    @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "ADMIN")
-    public Pong pingAdmin(HttpServletRequest request) {
-        LOG.info("Ping request from " + request.getAttribute(IdpApiAuthFilter.IdpTokenRbacDetails));
-        return new Pong("Hello Admin!");
-    }
-
     @RequestMapping(value = "/api/v1/ping/user")
     @IdpRbacPolicy(orgs = { "users-alpha.integratingfactor.com", "users.integratingfactor.com" }, roles = "USER")
     public Pong pingUser(HttpServletRequest request) {
-        LOG.info("Ping request from " + request.getAttribute(IdpApiAuthFilter.IdpTokenRbacDetails));
-        return new Pong("Hello User!");
+        try {
+            return new Pong("Hello " + oauthClient.validateToken(auth.getToken()).getFirstName() + "!");
+        } catch (Exception e) {
+            LOG.info("User is unauthenticated");
+            throw new IdpRbacAuthenticationException("user not authenticated");
+        }
     }
 
     public static class Pong {
