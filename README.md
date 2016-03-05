@@ -23,11 +23,22 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.1.4-SNAPSHOT</version>
+    <version>0.1.5-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)
 * Library uses Javaconfig to configure Spring Security Framework. However, following minimal xml configuration is needed:
+  * (optional) add CORS filter configuration in `web.xml`:
+  ```XML
+  <filter>
+      <filter-name>idpApiCorsFilter</filter-name>
+      <filter-class>com.integratingfactor.idp.lib.client.filter.IdpApiCorsFilter</filter-class>
+  </filter>
+  <filter-mapping>
+      <filter-name>idpApiCorsFilter</filter-name>
+      <url-pattern>/api/v1/*</url-pattern>
+  </filter-mapping>
+  ```  
   * add API OAuth filter configuration in `web.xml`:
   ```XML
   <filter>
