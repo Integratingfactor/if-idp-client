@@ -43,9 +43,9 @@ public class IdpKmsClientImpl implements IdpKmsClient {
 
     IdpPbeKeySpec currKeySpec = null;
 
-    private Map<Integer, IdpSecretKeySpec> keys = new ConcurrentHashMap<Integer, IdpSecretKeySpec>();
+    Map<Integer, IdpSecretKeySpec> keys = new ConcurrentHashMap<Integer, IdpSecretKeySpec>();
 
-    private Integer latestKeyVersion = 0;
+    Integer latestKeyVersion = 0;
 
     private ThreadLocal<IdpCryptoFactory> crypto = new ThreadLocal<IdpCryptoFactory>();
 
