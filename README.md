@@ -6,6 +6,7 @@ These libraries will provide functionality for following:
 * User approval for profile access and event subscription/notification
 * Spring security framework support for authentication with Integratingfactor.com's IDP service
 * RBAC on resource paths based on oAuth2 access token
+* KMS client service
 
 # Usage
 
@@ -23,7 +24,7 @@ Above steps should install the library into your local maven repository, and you
   <dependency>
     <groupId>com.integratingfactor.idp</groupId>
     <artifactId>lib-idp-client</artifactId>
-    <version>0.1.5-SNAPSHOT</version>
+    <version>0.1.6-SNAPSHOT</version>
   </dependency>
 ```
 * **Make sure to enable HTTP Sessions (required for CSRF and authorization workflow)** (e.g. if using google appengine, need to explicitly enable sessions)

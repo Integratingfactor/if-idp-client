@@ -74,6 +74,10 @@ public class IdpClientAuthProperties {
         return idpHostUrl;
     }
 
+    public String getKmsHostUrl() {
+        return idpHostUrl;
+    }
+
     public String getAppRedirectUrl() {
         return appRedirectUrl;
     }

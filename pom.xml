@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.integratingfactor.idp</groupId>
   <artifactId>lib-idp-client</artifactId>
-  <version>0.1.5-SNAPSHOT</version>
+  <version>0.1.6-SNAPSHOT</version>
   <name>Integratingfactor.com IDP Client Library</name>
   <description>Integratingfactor.com IDP Client Library</description>
   <properties>
@@ -15,6 +15,11 @@
   </prerequisites>
  
   <dependencies>
+   <dependency>
+        <groupId>com.integratingfactor.crypto</groupId>
+        <artifactId>lib-idp-crypto</artifactId>
+        <version>0.0.4-SNAPSHOT</version>
+   </dependency>
    <dependency>
     <groupId>org.springframework</groupId>
     <artifactId>spring-core</artifactId>
