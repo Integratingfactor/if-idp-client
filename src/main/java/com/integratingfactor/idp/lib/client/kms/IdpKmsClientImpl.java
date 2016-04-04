@@ -2,13 +2,14 @@ package com.integratingfactor.idp.lib.client.kms;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,7 +43,7 @@ public class IdpKmsClientImpl implements IdpKmsClient {
 
     IdpPbeKeySpec currKeySpec = null;
 
-    private Map<Integer, IdpSecretKeySpec> keys = new HashMap<Integer, IdpSecretKeySpec>();
+    private Map<Integer, IdpSecretKeySpec> keys = new ConcurrentHashMap<Integer, IdpSecretKeySpec>();
 
     private Integer latestKeyVersion = 0;
 
@@ -124,10 +125,11 @@ public class IdpKmsClientImpl implements IdpKmsClient {
         return myCrypto;
     }
 
-    @SuppressWarnings("unchecked")
     private List<IdpWrappedKeySpecJson> fetchServiceKeys() {
         try {
-            return restTemplate.exchange(kmsHost + ApiPrefix, HttpMethod.GET, new HttpEntity<>(headers), List.class)
+            return restTemplate.exchange(kmsHost + ApiPrefix, HttpMethod.GET, new HttpEntity<>(headers),
+                    new ParameterizedTypeReference<List<IdpWrappedKeySpecJson>>() {
+                    })
                     .getBody();
 
         } catch (Exception e) {
