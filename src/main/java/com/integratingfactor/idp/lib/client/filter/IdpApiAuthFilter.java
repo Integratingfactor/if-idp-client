@@ -1,6 +1,8 @@
 package com.integratingfactor.idp.lib.client.filter;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.servlet.FilterChain;
@@ -11,9 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.integratingfactor.idp.lib.client.config.IdpClientAuthProperties;
 import com.integratingfactor.idp.lib.client.model.IdpTokenValidation;
 import com.integratingfactor.idp.lib.client.rbac.IdpApiRbacDetails;
 import com.integratingfactor.idp.lib.client.rbac.IdpRbacAccessDeniedException;
@@ -35,6 +39,25 @@ public class IdpApiAuthFilter extends OncePerRequestFilter {
     @Autowired
     private IdpOauthClient oauthClient;
 
+    @Autowired
+    IdpClientAuthProperties clientProperties;
+
+    private Set<AntPathRequestMatcher> publicUrls = null;
+
+    synchronized boolean isPublic(HttpServletRequest request) {
+        if (publicUrls == null) {
+            publicUrls = new HashSet<AntPathRequestMatcher>();
+            for (String url : clientProperties.getAppClientPublicUrls().split(",")) {
+                publicUrls.add(new AntPathRequestMatcher(url));
+            }
+        }
+        for (AntPathRequestMatcher matcher : publicUrls) {
+            if (matcher.matches(request))
+                return true;
+        }
+        return false;
+    }
+
     public static IdpApiRbacDetails getRbacDetails() {
         return rbacDetails.get();
     }
@@ -46,18 +69,20 @@ public class IdpApiAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        LOG.fine("RBAC on request: " + request.getRequestURI());
+        LOG.info("RBAC on request: " + request.getRequestURI());
         try {
             // first get the authorization header
             String authorization = request.getHeader("Authorization");
-            if (StringUtils.isEmpty(authorization) || !authorization.startsWith(AuthTokenType)) {
-                // not authorized
-                sendError(response, HttpStatus.UNAUTHORIZED, "Missing or incorrect authorization header");
-                return;
+            if (!isPublic(request)) {
+                if (StringUtils.isEmpty(authorization) || !authorization.startsWith(AuthTokenType)) {
+                    // not authorized
+                    sendError(response, HttpStatus.UNAUTHORIZED, "Missing or incorrect authorization header");
+                    return;
+                }
+                // request.setAttribute(IdpTokenRbacDetails,
+                // getRbacDetails(authorization.substring(StartIndex)));
+                setRbacDetails(getRbacDetails(authorization.substring(StartIndex)));
             }
-            // request.setAttribute(IdpTokenRbacDetails,
-            // getRbacDetails(authorization.substring(StartIndex)));
-            setRbacDetails(getRbacDetails(authorization.substring(StartIndex)));
             filterChain.doFilter(request, response);
             setRbacDetails(null);
         } catch (IdpRbacAuthenticationException e) {
